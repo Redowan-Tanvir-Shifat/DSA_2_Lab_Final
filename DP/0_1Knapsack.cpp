@@ -1,32 +1,34 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-
 using namespace std;
 
-// Function to solve the 0/1 Knapsack problem using recursion
-int knapsack(int W, const vector<int> &weights, const vector<int> &values, int n)
+int knapsack(int W, const vector<int> &weights, const vector<int> &values, int n, vector<vector<int>> &mem)
 {
-    // Base case: no items left or capacity is 0
     if (n == 0 || W == 0)
     {
         return 0;
     }
 
-    // If the weight of the nth item is more than the capacity, it cannot be included
-    if (weights[n - 1] > W)
+    if (mem[n][W] != -1)
     {
-        return knapsack(W, weights, values, n - 1);
+        return mem[n][W];
     }
 
-    // Case 1: Include the nth item
-    int includeItem = values[n - 1] + knapsack(W - weights[n - 1], weights, values, n - 1);
+    if (weights[n - 1] > W)
+    {
+        mem[n][W] = knapsack(W, weights, values, n - 1, mem);
+    }
+    else
+    {
+        int withItem = values[n - 1] + knapsack(W - weights[n - 1], weights, values, n - 1, mem);
 
-    // Case 2: Exclude the nth item
-    int excludeItem = knapsack(W, weights, values, n - 1);
+        int withoutItem = knapsack(W, weights, values, n - 1, mem);
 
-    // Return the maximum of including or excluding the nth item
-    return max(includeItem, excludeItem);
+        mem[n][W] = max(withItem, withoutItem);
+    }
+
+    return mem[n][W];
 }
 
 int main()
@@ -38,8 +40,10 @@ int main()
 
     int n = values.size(); // Number of items
 
+    vector<vector<int>> mem(n + 1, vector<int>(W + 1, -1));
+
     // Call the knapsack function
-    int maxProfit = knapsack(W, weights, values, n);
+    int maxProfit = knapsack(W, weights, values, n, mem);
 
     // Print the result
     cout << "Maximum Profit: " << maxProfit << endl;
